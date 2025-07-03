@@ -68,11 +68,10 @@ seedList := ["Carrot", "Strawberry", "Blueberry", "Tomato", "Cauliflower", "Wate
 
 gearList := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
 
-eggList := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg", "Bee Egg", "Bug Egg"]
+eggList := ["All Eggs"]
 
 seedIndexes := []
 gearIndexes := []
-chosenEggs := []
 
 JoinArr(arr, delim := ",") {
     result := ""
@@ -231,7 +230,7 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
 }
 
 StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
+    global macro_running, seedIndexes, gearIndexes, CONFIG
     if !macro_running {
 
         multiple := false
@@ -276,13 +275,6 @@ StartMacro(*) {
             SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
                 gearIndexes.Push(i)
-            }
-        }
-
-        for i, chk in eggCheckboxes {
-            SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
-            if(chk.Value == 1) {
-                chosenEggs.Push(eggList[i])
             }
         }
 
@@ -765,7 +757,7 @@ ToT(){
 }
 
 Macro() {
-    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, show_timestamp_tooltip, seedList, gearList
+    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList
 
     show_timestamp_tooltip := false
     SetToolTip("")
@@ -906,190 +898,8 @@ Macro() {
 
     Press("\")
 
-    buyAllEggs := CONFIG['Settings']["buy_all_eggs"] = "true"
-    if(trigger_egg_macro && !buyAllEggs) {
-        ; go to egg 1
-        HoldKey("S", 0.9)
-        Press("E")
-        Sleep(500)
-        SetToolTip("Checking egg 1 0/30")
-        egg1Count := 0
-        buyEgg1 := false
-        egg1Loop := 1
-        Loop 30 {
-
-            ; save an image of the screen to temp file
-
-            for i, egg in chosenEggs {
-
-                egg1Text := GetOCRRect(
-                    CONFIG['Config']["egg_top_corner_x"],
-                    CONFIG['Config']["egg_top_corner_y"],
-                    CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                    CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
-                    {
-                        grayscale: 1,
-                    }
-                )
-
-                for i, egg in chosenEggs {
-                    if(macro_running = false) {
-                        break
-                    }
-
-                    lev := Fuz.LevenshteinDistance(egg1Text, egg)
-
-                    if(lev < 4){
-                        egg1Count++
-                    }
-                }
-            }
-            SetToolTip("Checking egg 1 " egg1Loop "/30")
-            egg1Loop++
-        }
-        SetToolTip("")
-        if(egg1Count > 15){
-           buyEgg1 := true
-        }
-        if(buyEgg1) {
-            SetToolTip("Buying egg 1")
-        } else {
-            SetToolTip("Skipping egg 1")
-        }
-        ; navigate to egg ui
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        if(buyEgg1) {
-            ; buy
-            Press("Enter")
-        } else {
-            ; hit x
-            Press("D", 2)
-            Press("Enter")
-        }
-        SetToolTip("")
-        Press("\")
-
-        ; go to egg 2
-        HoldKey("S", 0.18)
-        Press("E")
-        Sleep(500)
-        SetToolTip("Checking egg 2 0/30")
-        egg2Count := 0
-        buyEgg2 := false
-        egg2Loop := 1
-        Loop 30 {
-            if(macro_running = false) {
-                break
-            }
-
-            egg2Text := GetOCRRect(
-                CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_top_corner_y"],
-                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
-                {
-                    grayscale: 1,
-                }
-            )
-
-            for i, egg in chosenEggs {
-                DebugLog("Egg 2 text: " egg2Text)
-                lev := Fuz.LevenshteinDistance(egg2Text, egg)
-
-                if(lev < 4){
-                    egg2Count++
-                }
-            }
-
-            SetToolTip("Checking egg 2 " egg2Loop "/30")
-            egg2Loop++
-        }
-        SetToolTip("")
-        if(egg2Count > 15){
-            buyEgg2 := true
-        }
-        if(buyEgg2) {
-            SetToolTip("Buying egg 2")
-        } else {
-            SetToolTip("Skipping egg 2")
-        }
-        ; navigate to egg ui
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        if(buyEgg2) {
-            ; buy
-            Press("Enter")
-        } else {
-            ; hit x
-            Press("D", 2)
-            Press("Enter")
-        }
-        SetToolTip("")
-        Press("\")
-
-        ; go to egg 3
-        HoldKey("S", 0.18)
-        Press("E")
-        Sleep(500)
-        SetToolTip("Checking egg 3 0/30")
-        egg3Count := 0
-        buyEgg3 := false
-        egg3Loop := 1
-        Loop 30 {
-            if(macro_running = false) {
-                break
-            }
-
-            egg3Text := GetOCRRect(
-                CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_top_corner_y"],
-                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
-                {
-                    grayscale: 1,
-                }
-            )
-
-            for i, egg in chosenEggs {
-                lev := Fuz.LevenshteinDistance(egg3Text, egg)
-
-                if(lev < 4){
-                    egg3Count++
-                }
-            }
-
-            SetToolTip("Checking egg 3 " egg3Loop "/30")
-            egg3Loop++
-        }
-        SetToolTip("")
-        if(egg3Count > 15){
-            buyEgg3 := true
-        }
-        if(buyEgg3) {
-            SetToolTip("Buying egg 3")
-        } else {
-            SetToolTip("Skipping egg 3")
-        }
-        ; navigate to egg ui
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        if(buyEgg3) {
-            ; buy
-            Press("Enter")
-        } else {
-            ; hit x
-            Press("D", 2)
-            Press("Enter")
-        }
-        SetToolTip("")
-        Press("\")
-
-        trigger_egg_macro := false
-    } else if(trigger_egg_macro && buyAllEggs) {
+    buyAllEggs := CONFIG['Eggs']["All Eggs"] = "true"
+    if(trigger_egg_macro && buyAllEggs) {
         Sleep(100)
         HoldKey("S", 0.9)
         Press("E")
