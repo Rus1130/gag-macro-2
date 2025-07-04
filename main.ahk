@@ -188,6 +188,17 @@ ManyPress(string, delay := 200){
     }
 }
 
+GetDiffs(arr) {
+    diffs := []
+    for i, val in arr {
+        if (i = 1)
+            diffs.Push(val) ; or push 0, or skip it depending on your preference
+        else
+            diffs.Push(val - arr[i - 1])
+    }
+    return diffs
+}
+
 Press(key, num := 1, delay := 100) {
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
@@ -278,50 +289,7 @@ StartMacro(*) {
         WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
 
-        Sleep(200)
-
-        chatCheck := 0
-        SetToolTip("Checking if chat is open...")
-        Loop 50 {
-            if(macro_running = false) {
-                break
-            }
-
-            chatString := GetOCRRect(0, 0, 500, 500)
-
-            if(InStr(chatString, "[Tip]") || RegExMatch(chatString, "translates( supported lang)?") || StrLen(chatString) > 100) {
-                chatCheck++
-            }
-        }
-        SetToolTip("")
-
-        if(chatCheck > 25) {
-            MsgBox("The chat is open! Please close it before starting the macro.")
-            Kill()
-            WinActivate("Rus' Grow a Garden Macro")
-            return
-        }
-
-        tabCheck := 0
-        SetToolTip("Checking if player list is open...")
-        Loop 50 {
-            if(macro_running = false) {
-                break
-            }
-
-            tabString := GetOCRRect(A_ScreenWidth-500, 0, 500, 500)
-
-            if(InStr(tabString, "People") || InStr(tabString, "Scheckles")) {
-                tabCheck++
-            }
-        }
-        SetToolTip("")
-
-        if(tabCheck > 25) {
-            Press("Tab")
-        }
-
-        Sleep(100)
+        Sleep(300)
 
         AlignCamera()
 
@@ -609,14 +577,13 @@ Macro() {
     otherFailsafeCount := 0
 
     SetToolTip("Checking failsafes...")
-    Sleep(100)
+    Sleep(300)
+    SetToolTip("")
     i := 1
     Loop scanCount {
         if(macro_running = false) {
             break
         }
-
-        SetToolTip(i "/" scanCount)
 
         ocr := GetOCR()
 
@@ -675,16 +642,19 @@ Macro() {
         }
         Send("{WheelDown}")
     }
-
+    Sleep(500)
     Press("\")
 
+    ; buy seeds
+    seedDiffs := GetDiffs(seedIndexes)
+    seedDiffs[1] -= 1
     ; loop through seedIndexes to buy the right seeds
-    for i, seedIndex in seedIndexes {
+    for i, seedIndex in seedDiffs {
         if(macro_running = false) {
             break
         }
-        SetToolTip("Buying " seedList[seedIndex] " seed if in stock")
-        Press("S", seedIndex - 1)
+        SetToolTip("Buying " seedList[seedIndexes[i]] " seed if in stock")
+        Press("S", seedIndex)
         Press("Enter")
         Press("S")
 
@@ -692,7 +662,6 @@ Macro() {
         
         Press("W")
         Press("Enter")
-        Press("W", seedIndex - 1)
         SetToolTip("")
     }
     Press("\")
@@ -722,20 +691,23 @@ Macro() {
     Press("\")
 
     ; buy gears
-    for i, gearIndex in gearIndexes {
+    gearDiffs := GetDiffs(gearIndexes)
+    gearDiffs[1] -= 1
+
+    for i, gearIndex in gearDiffs {
         if(macro_running = false) {
             break
         }
-        SetToolTip("Buying " gearList[gearIndex] " gear if in stock")
-        Press("S", gearIndex - 1)
+
+        SetToolTip("Buying " gearList[gearIndexes[i]] " gear if in stock")
+        Press("S", gearIndex)
         Press("Enter")
         Press("S")
 
-        Press("Enter", 5)
+        Press("Enter", 6, 50)
         
-        Press("W", 1)
-        Press("Enter", 1)
-        Press("W", gearIndex - 1)
+        Press("W")
+        Press("Enter")
         SetToolTip("")
     }
     Press("\")
@@ -771,6 +743,7 @@ Macro() {
     }
 
     ClickUIButton("garden")
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
 
     show_timestamp_tooltip := true
 }
