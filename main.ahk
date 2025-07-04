@@ -177,6 +177,17 @@ HoldKey(key, sec) {
     Send("{" key " up}")
 }
 
+ManyPress(string, delay := 200){
+    ; split the string by spaces
+    parts := StrSplit(string, " ")
+    for part in parts {
+        if(macro_running = false) {
+            break
+        }
+        Press(part, 1, delay)
+    }
+}
+
 Press(key, num := 1, delay := 100) {
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
@@ -184,9 +195,7 @@ Press(key, num := 1, delay := 100) {
         MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`n" ToT())
         ExitApp
         return
-    }
-
-    loop num {
+    } else loop num {
         if(macro_running == false) {
             break
         }
@@ -233,34 +242,18 @@ StartMacro(*) {
     global macro_running, seedIndexes, gearIndexes, CONFIG
     if !macro_running {
 
-        multiple := false
-        if CONFIG["Config"]["gear_enter_point_set"] = "false" ||
-              CONFIG["Config"]["egg_top_corner_set"] = "false" ||
-              CONFIG["Config"]["egg_bottom_corner_set"] = "false" 
-                multiple := true
+        ; get all properties from CONFIG["Config"][/(.)_set$/]
 
-        if(multiple) {
-            MsgBox("You must set the config before starting the macro.`nHit the 'Set Config' button to do so.")
-            Kill()
-            return
-        }
-          
-        if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
-            MsgBox("Gear entrance point not set! Hit the 'Set Config' button.")
-            Kill()
-            return
-        }
+        setProperties := []
+        for prop in CONFIG["Config"]
+            setProperties.Push(prop)
 
-        if(CONFIG["Config"]["egg_top_corner_set"] = "false"){
-            MsgBox("Egg top corner not set! Hit the 'Set Config' button.")
-            Kill()
-            return
-        }
-
-        if(CONFIG["Config"]["egg_bottom_corner_set"] = "false"){
-            MsgBox("Egg bottom corner not set! Hit the 'Set Config' button.")
-            Kill()
-            return
+        for prop in setProperties {
+            if(RegExMatch(prop, "(.+)_set$") && CONFIG["Config"][prop] = "false") {
+                MsgBox("required config setting `"" StrReplace(prop, "_set", "") "`" not set!`nHit the 'Set Config' button to do so.")
+                Kill()
+                return
+            }
         }
 
         SetToolTip("Getting data from settings.ini")
@@ -330,63 +323,18 @@ StartMacro(*) {
 
         Sleep(100)
 
-        ; SetToolTip("Looking for Recall Wrench...")
-        ; recallCount := 0 
-        ; loop 8 {
-        ;     if(macro_running = false) {
-        ;         break
-        ;     }
-        ;     str := RegExReplace(GetOCR(), "Looking for Recall Wrench\.{1,3}", "")            
-        ;     if(InStr(str, "Recall") = 0) {
-        ;         recallCount++
-        ;     }
-        ; }
+        AlignCamera()
 
-        ; if(recallCount > 4){
-        ;     SetToolTip("Recall Wrench not found! Equipping now...")
-        ;     Press("\", 2)
-        ;     LeftClick()
-        ;     Press("\")
-        ;     Press("``")
-        ;     Press("D", 3)
-        ;     Press("S", 2)
-        ;     Press("Enter")
-        ;     Send("^a")
-        ;     Press("Backspace")
-        ;     Send("Recall")
-        ;     Press("Enter")
-        ;     Press("S", 3)
-        ;     Press("W", 2)
-        ;     Press("Enter")
-        ;     Press("S")
-        ;     Press("D")
-        ;     Press("Enter")
-        ;     Press("``")
-        ; }
-        ; SetToolTip("")
-
-        Setup()
-
-        ; Macro()
+        SetTimer(Master, 10)
     }
 }
 
 AlignCamera() {
     ; turn on shift lock + follow camera
-    Press("Esc")
-    Sleep(100)
-    Press("Tab")
-    Sleep(100)
-    Press("D")
-    Sleep(100)
-    Press("S")
-    Sleep(100)
-    Press("D", 2)
-    Sleep(100)
-    Press("Esc")
+    ManyPress("Esc Tab D S D D Esc")
     Sleep(1000)
 
-    ; reset camera orbit
+    ; reset camera orbit by looking down with shiftlock on
     SetToolTip("Reset camera orbit")
     Press("LShift")
     Sleep(500)
@@ -394,23 +342,8 @@ AlignCamera() {
     SetToolTip("")
 
     ; turn off shift lock
-    Sleep(200)
-    Press("Esc")
-    Sleep(100)
-    Press("Tab")
-    Sleep(100)
-    Press("D")
-    Sleep(100)
-    Press("Esc")
-    Sleep(200)
-
-    ; reset ui nav
-    Press("\", 2)
-    Sleep(100)
-    LeftClick()
-    Press("\")
-
-    Press("D", 3)
+    ManyPress("Esc Tab D Esc")
+    Sleep(500)
 
     ; align camera
     SetToolTip("Aligning camera")
@@ -418,149 +351,79 @@ AlignCamera() {
         if(macro_running = false) {
             break
         }
-        Press("Enter")
-        Press("D", 2)
-        Press("Enter")
-        Press("A", 2)
+        ClickUIButton("seeds")
+        ClickUIButton("sell")
     }
+    ClickUIButton("seeds")
     SetToolTip("")
 
-    Press("Enter")
-
     ; turn off follow camera
-    Press("Esc")
-    Sleep(100)
-    Press("Tab")
-    Sleep(100)
-    Press("S")
-    Sleep(100)
-    Press("D", 2)
-    Sleep(100)
-    Press("Esc")
-
-    ; return to plot
-    Sleep(200)
-    Press("D")
-    Sleep(200)
-    Press("Enter")
-    Sleep(100)
-    Press("A", 4)
+    ManyPress("Esc Tab S D D Esc")
 
     ; reset zoom
-    Press("\", 2)
-    Sleep(100)
+    Sleep(800)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    Sleep(800)
+    ClickUIButton("garden")
+    Sleep(2000)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
     LeftClick()
     SetToolTip("Resetting zoom")
-    HoldKey("I", 10)
-    Loop 10 {
+    Loop 60 {
+        if(macro_running = false) {
+            break
+        }
+        Send("{WheelUp}")
+    }
+    Sleep(500)
+    Loop 13 {
+        if(macro_running = false) {
+            break
+        }
         Send("{WheelDown}")
     }
 }
 
-Setup() {
-    SetToolTip("Starting setup...")
-    Sleep(1000)
-    SetToolTip("")
+/**
+ * 
+ * @param name - "gear", "gear exit", "seeds", "seed exit", "egg buy", "egg exit", "sell", "garden"
+ */
+ClickUIButton(name){
+    ; gear, gear exit, seed, seed exit, egg, sell, garden
 
-    AlignCamera()
-
-    ; reset ui nav
-    SetToolTip("Resetting UI navigation")
-    Press("\", 2)
-    Sleep(100)
-    LeftClick()
-    Press("\")
-
-    ; navigate into the seed shop
-    SetToolTip("Navigating to seed shop")
-    Press("D", 3)
-    Sleep(100)
-    Press("Enter")
-    Sleep(100)
-    Press("E")
-    Sleep(2500)
-    Press("S")
-
-    ; first 2 presses: go to top of box
-    ; second 2 presses: return to settings gear
-    SetToolTip("Resetting seed shop state")
-    Press("\", 4)
-    Press("A", 3)
-
-    ; go back into the shop
-    SetToolTip("Enter seed shop")
-    Press("D", 3)
-    Sleep(100)
-    Press("S")
-    Sleep(500)
-
-    ; reset dropdown
-    SetToolTip("Resetting carrot dropdown")
-    carrotCheck := FindImage("imgs/carrot_check.png")
-    if(carrotCheck == 1){
-        Press("Enter")
+    if(name == "gear"){
+        SmoothMove(CONFIG['Config']["gear_enter_point_x"], CONFIG['Config']["gear_enter_point_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "gear exit") {
+        SmoothMove(CONFIG['Config']["gear_shop_exit_button_x"], CONFIG['Config']["gear_shop_exit_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "seeds") {
+        SmoothMove(CONFIG['Config']["seed_shop_button_x"], CONFIG['Config']["seed_shop_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "seed exit") {
+        SmoothMove(CONFIG['Config']["seed_shop_exit_button_x"], CONFIG['Config']["seed_shop_exit_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "egg buy") {
+        SmoothMove(CONFIG['Config']["egg_buy_button_x"], CONFIG['Config']["egg_buy_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "egg exit") {
+        SmoothMove(CONFIG['Config']["egg_shop_exit_button_x"], CONFIG['Config']["egg_shop_exit_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "sell") {
+        SmoothMove(CONFIG['Config']["sell_button_x"], CONFIG['Config']["sell_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "garden") {
+        SmoothMove(CONFIG['Config']["garden_button_x"], CONFIG['Config']["garden_button_y"], 10, 0.5)
+        Sleep(100)
+        LeftClick()
     }
-
-    ; exit shop
-    SetToolTip("Exiting seed shop")
-    Press("W")
-    Press("Enter")
-
-    ; go to gear shop
-    SetToolTip("Navigating to gear shop")
-    Press("2")
-    LeftClick()
-    Sleep(500)
-    Press("E")
-
-    ; actually enter the gear shop
-    SetToolTip("Entering gear shop")
-    x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
-    y := A_ScreenHeight / 2
-    SmoothMove(x, y - 60, 10, 2)
-    Sleep(2000)
-    LeftClick()
-    Sleep(2000)
-
-    ; reset ui nav
-    SetToolTip("Resetting gear shop state")
-    Press("\", 2)
-    LeftClick()
-    Press("\")
-
-    ; go back into the shop
-    SetToolTip("Re-entering gear shop")
-    Sleep(100)
-    Press("D", 3)
-    Sleep(100)
-    Press("S")
-    Sleep(100)
-
-    ; reset dropdown
-    SetToolTip("Resetting watering can dropdown")
-    Press("Enter", 2)
-    Sleep(500)
-    wateringCanCheck := FindImage("imgs/watering_can_check.png")
-    if(wateringCanCheck == 1){
-        Press("Enter")
-    }
-
-    ; exit gear shop
-    SetToolTip("Exit gear shop")
-    Press("W")
-    Press("Enter")
-
-    ; return to plot
-    SetToolTip("Returning to plot")
-    Press("\", 2)
-    Press("D", 4)
-    Press("Enter")
-    Press("A", 4)
-    SetToolTip("Setup complete")
-    Sleep(1000)
-    SetToolTip("")
-
-    SetTimer(Master, 10)
 }
 
 setConfig(*) {
@@ -573,9 +436,26 @@ setConfig(*) {
         WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
 
+        waitForMouseClick("Click on the `"Seeds`" button at the top of the screen (seed_shop_button)")
+        setConfigAndIniValue("seed_shop_button", mouse_x, mouse_y)
+        Press("E")
+        Sleep(2200)
+
+        waitForMouseClick("Click on the `"X`" button at the top right of the seed shop (seed_shop_exit_button)")
+        setConfigAndIniValue("seed_shop_exit_button", mouse_x, mouse_y)
+        Sleep(1000)
+
+        waitForMouseClick("Click on the `"Garden`" button at the top of the screen (garden_button)")
+        setConfigAndIniValue("garden_button", mouse_x, mouse_y)
+        Sleep(1000)
+
+        waitForMouseClick("Click on the `"Sell`" button at the top of the screen (sell_button)")
+        setConfigAndIniValue("sell_button", mouse_x, mouse_y)
+        Sleep(1000)
+
         AlignCamera()
 
-        Sleep(100)
+        Sleep(1000)
         Press("2")
         Sleep(100)
         LeftClick()
@@ -583,84 +463,26 @@ setConfig(*) {
         Press("E")
         Sleep(2000)
 
-        t1() {
-            if(macro_running = false) {
-                ToolTip("")
-                Kill()
-                return
-            }
-            ToolTip("Left click where the dialogue option to enter the gear shop is located.")
-        }
-        SetTimer(t1, 16)
-        KeyWait("LButton", "D")
-        MouseGetPos(&mouse_x, &mouse_y)
-        ToolTip("")
-        SetTimer(t1, 0)
+        waitForMouseClick("Click the dialogue option to enter the gear shop (gear_enter_point)")
+        setConfigAndIniValue("gear_enter_point", mouse_x, mouse_y)
+        Sleep(2200)
 
-        SetSetting("Config", "gear_enter_point_set", "true")
-        SetSetting("Config", "gear_enter_point_x", mouse_x)
-        SetSetting("Config", "gear_enter_point_y", mouse_y)
-        CONFIG['Config']["gear_enter_point_set"] := "true"
-        CONFIG['Config']["gear_enter_point_x"] := mouse_x
-        CONFIG['Config']["gear_enter_point_y"] := mouse_y
+        waitForMouseClick("Click on the `"X`" button at the top right of the gear shop (gear_shop_exit_button)")
+        setConfigAndIniValue("gear_shop_exit_button", mouse_x, mouse_y)
+        Sleep(1000)
 
-        Sleep(2000)
-        Press("\")
-        Press("D", 5)
-        Press("S")
-        Press("D")
-        Press("Enter")
-        Press("\")
-        Sleep(100)
         HoldKey("S", 0.9)
         Press("E")
-        Sleep(500)
+        Sleep(1000)
+        waitForMouseClick("Press the button that has a price in it (e.g. 50,000¢ , 1,000,000¢ , or it can also say `"NO STOCK`") (egg_buy_button)")
+        setConfigAndIniValue("egg_buy_button", mouse_x, mouse_y)
+        Sleep(1000)
 
-        t2() {
-            if(macro_running = false) {
-                ToolTip("")
-                Kill()
-                return
-            }
-            ToolTip("Left click the top left of the egg shop box.")
-        }
-        SetTimer(t2, 16)
-        KeyWait("LButton", "D")
-        MouseGetPos(&mouse_x, &mouse_y)
-        ToolTip("")
-        SetTimer(t2, 0)
+        Press("E")
+        WaitForMouseClick("Click on the `"X`" button at the top right of the egg shop (egg_exit_button)")
+        setConfigAndIniValue("egg_shop_exit_button", mouse_x, mouse_y)
+        Sleep(1000)
 
-        SetSetting("Config", "egg_top_corner_set", "true")
-        SetSetting("Config", "egg_top_corner_x", mouse_x)
-        SetSetting("Config", "egg_top_corner_y", mouse_y)
-        CONFIG['Config']["egg_top_corner_set"] := "true"
-        CONFIG['Config']["egg_top_corner_x"] := mouse_x
-        CONFIG['Config']["egg_top_corner_y"] := mouse_y
-
-        Sleep(1500)
-
-        t3() {
-            if(macro_running = false) {
-                ToolTip("")
-                Kill()
-                return
-            }
-            ToolTip("Left click the bottom right of the egg shop box.")
-        }
-        SetTimer(t3, 16)
-        KeyWait("LButton", "D")
-        MouseGetPos(&mouse_x, &mouse_y)
-        ToolTip("")
-        SetTimer(t3, 0)
-
-        SetSetting("Config", "egg_bottom_corner_set", "true")
-        SetSetting("Config", "egg_bottom_corner_x", mouse_x)
-        SetSetting("Config", "egg_bottom_corner_y", mouse_y)
-        CONFIG['Config']["egg_bottom_corner_set"] := "true"
-        CONFIG['Config']["egg_bottom_corner_x"] := mouse_x
-        CONFIG['Config']["egg_bottom_corner_y"] := mouse_y
-
-        Sleep(600)
 
         ToolTip("Done! You can now run the macro.")
         macro_running := false
@@ -669,7 +491,33 @@ setConfig(*) {
             ToolTip("")
         ), 2000)
     }
+}
 
+waitForMouseClick(msg){
+    global mouse_x, mouse_y
+    t() {
+        if(macro_running = false) {
+            ToolTip("")
+            Kill()
+            return
+        }
+        ToolTip(msg)
+    }
+    SetTimer(t, 16)
+    KeyWait("LButton", "D")
+    MouseGetPos(&mouse_x, &mouse_y)
+    ToolTip("")
+    SetTimer(t, 0)
+}
+
+setConfigAndIniValue(name, x, y){
+    SetSetting("Config", name "_set", "true")
+    SetSetting("Config", name "_x", x)
+    SetSetting("Config", name "_y", y)
+
+    CONFIG['Config'][name "_set"] := "true"
+    CONFIG['Config'][name "_x"] := x
+    CONFIG['Config'][name "_y"] := y
 }
 
 startButton := window.AddButton("x" x1 " y" 500 " w100", "Start")
@@ -740,14 +588,6 @@ Master() {
     }
 }
 
-FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
-    xResult := 0
-    yResult := 0
-
-    imgFound := ImageSearch(&xResult, &yResult, x1, y1, x2, y2, "*TransBlack *30 " path)
-    return imgFound
-}
-
 /**
  * Time of Termination
  */
@@ -778,23 +618,22 @@ Macro() {
 
         SetToolTip(i "/" scanCount)
 
+        ocr := GetOCR()
+
         if(CONFIG["Settings"]["internet_failsafe"] == "true"){
-            internetFailsafe := GetOCR()
-            if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect") {
+            if(ocr == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect") {
                 internetFailsafeCount++
             }
         }
 
         if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
-            shutdownFailsafe := GetOCR()
-            if(shutdownFailsafe == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect") {
+            if(ocr == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect") {
                 shutdownFailsafeCount++
             }
         }
 
         if(CONFIG["Settings"]["other_failsafe"] == "true"){
-            otherFailsafe := GetOCR()
-            if(RegExMatch(otherFailsafe, "Disconnected (.*) Leave Reconnect")) {
+            if(RegExMatch(ocr, "Disconnected (.*) Leave Reconnect")) {
                 otherFailsafeCount++
             }
         }
@@ -823,13 +662,21 @@ Macro() {
     SetToolTip("")
     Sleep(1000)
 
-
-    ; go to seed shop
-    Press("D", 3)
-    Press("Enter")
+    ; enter seed shop
+    ClickUIButton("seeds")
+    Sleep(100)
     Press("E")
     Sleep(2000)
-    Press("S")
+
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    Loop 100 {
+        if(macro_running = false) {
+            break
+        }
+        Send("{WheelDown}")
+    }
+
+    Press("\")
 
     ; loop through seedIndexes to buy the right seeds
     for i, seedIndex in seedIndexes {
@@ -848,13 +695,9 @@ Macro() {
         Press("W", seedIndex - 1)
         SetToolTip("")
     }
-
-    Press("Enter", 2)
-    Sleep(300)
-    Press("W")
-    Sleep(300)
-    Press("Enter")
-    ; return to top of seed shop and exit
+    Press("\")
+    ClickUIButton("seed exit")
+    Sleep(1000)
 
     ; go to gear shop
     Sleep(500)
@@ -864,15 +707,19 @@ Macro() {
     Press("E", 1)
 
     ; enter gear shop
-    SmoothMove(CONFIG['Config']["gear_enter_point_x"], CONFIG['Config']["gear_enter_point_y"], 10, 2)
-    Sleep(3000)
-    LeftClick()
     Sleep(2000)
-    Press("\", 2)
-    LeftClick()
-    Press("\", 1)
-    Press("D", 3)
-    Press("S", 1)
+    ClickUIButton("gear")
+    Sleep(2000)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    
+    Loop 100 {
+        if(macro_running = false) {
+            break
+        }
+        Send("{WheelDown}")
+    }
+    Sleep(500)
+    Press("\")
 
     ; buy gears
     for i, gearIndex in gearIndexes {
@@ -891,12 +738,8 @@ Macro() {
         Press("W", gearIndex - 1)
         SetToolTip("")
     }
-
-    ; return to top of gear shop and exit
-    Press("W", 1)
-    Press("Enter", 1)
-
     Press("\")
+    ClickUIButton("gear exit")
 
     buyAllEggs := CONFIG['Eggs']["All Eggs"] = "true"
     if(trigger_egg_macro && buyAllEggs) {
@@ -904,41 +747,30 @@ Macro() {
         HoldKey("S", 0.9)
         Press("E")
         Sleep(1000)
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        Press("Enter")
-        Press("\")
+        ClickUIButton("egg buy")
+        Sleep(100)
+        ClickUIButton("egg exit")
 
         Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        Press("Enter")
-        Press("\")
+        ClickUIButton("egg buy")
+        Sleep(100)
+        ClickUIButton("egg exit")
 
         Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
-        Press("\")
-        Press("D", 3)
-        Press("S")
-        Press("Enter")
-        Press("\")
+        ClickUIButton("egg buy")
+        Sleep(100)
+        ClickUIButton("egg exit")
 
         trigger_egg_macro := false
     }
 
-    Press("\", 2)
-    LeftClick()
-    Press("\")
-    Press("D", 4)
-    Press("Enter")
-    Press("A", 4)
+    ClickUIButton("garden")
 
     show_timestamp_tooltip := true
 }
