@@ -17,7 +17,7 @@ last_fired_egg := 0
 last_fired_shop := 0
 loop_counter := 0
 trigger_egg_macro := false
-show_timestamp_tooltip := true
+show_timestamp_tooltip := false
 mouse_x := 0
 mouse_y := 0
 first_run := true
@@ -291,9 +291,7 @@ StartMacro(*) {
 
         Sleep(300)
 
-        AlignCamera()
-
-        SetTimer(Master, 10)
+        SetTimer(Master, 100)
     }
 }
 
@@ -568,7 +566,8 @@ Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList
 
     show_timestamp_tooltip := false
-    SetToolTip("")
+
+    AlignCamera()
 
     scanCount := CONFIG["Settings"]["failsafe_scan_count"]
 
@@ -577,7 +576,9 @@ Macro() {
     otherFailsafeCount := 0
 
     SetToolTip("Checking failsafes...")
-    Sleep(300)
+    Sleep(1000)
+    SmoothMove(A_ScreenWidth, A_ScreenHeight, 10, 2)
+    Sleep(800)
     SetToolTip("")
     i := 1
     Loop scanCount {
