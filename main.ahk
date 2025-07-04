@@ -632,7 +632,7 @@ Macro() {
 
     ; enter seed shop
     ClickUIButton("seeds")
-    Sleep(100)
+    Sleep(300)
     Press("E")
     Sleep(2000)
 
