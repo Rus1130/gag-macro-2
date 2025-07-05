@@ -22,7 +22,7 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 * `shop_timer`: Time between checks of the seed and gear shops. Default is every `300` seconds since midnight.
 * `failsafe_scan_count`: Number of times to scan the screen for failsafe text. Default is `10`.
 * `egg_timer`: Time between egg checks. Default is every `1800` seconds since midnight.
-* `grace`: Seconds between pressing the start button and the macro actually starting. Default is `5` seconds.
+* `grace`: Seconds between pressing the start button and the macro actually starting. Default is `2.5` seconds.
 # Config setup
 * The config setup is done by clicking the "Set Config" button in the UI, and it must bedone before your first run of the macro. If not done, the macro will let you know and it will not run.
 * These are the points that the macro will ask you for:

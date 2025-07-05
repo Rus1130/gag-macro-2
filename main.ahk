@@ -335,13 +335,15 @@ AlignCamera() {
     SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
     LeftClick()
     SetToolTip("Resetting zoom")
-    Loop 60 {
+    Loop 100 {
         if(macro_running = false) {
             break
         }
         Send("{WheelUp}")
     }
     Sleep(500)
+    LeftClick()
+    LeftClick()
     Loop 13 {
         if(macro_running = false) {
             break
