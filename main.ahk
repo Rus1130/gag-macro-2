@@ -6,6 +6,20 @@ Fuz := Fuzzy()
 
 settingsFile := "settings.ini"
 
+; DEBUG_egg_buy := true
+; DEBUG_seed_buy := true
+; DEBUG_gear_buy := true
+; DEBUG_skip_failsafes := false
+; DEBUG_skip_macro_align := false
+; DEBUG_direct_run := false
+
+DEBUG_egg_buy := true
+DEBUG_seed_buy := true
+DEBUG_gear_buy := true
+DEBUG_skip_failsafes := false
+DEBUG_skip_macro_align := false
+DEBUG_direct_run := false
+
 ; Read and parse JSON
 if !FileExist(settingsFile) {
     MsgBox("settings.ini file not found.")
@@ -64,14 +78,22 @@ x1 := 10, y1 := 0, w := 250
 x2 := x1 + w + 20
 x3 := x2 + w + 20
 
-seedList := ["Carrot", "Strawberry", "Blueberry", "Tomato", "Cauliflower", "Watermelon", "Rafflesia", "Green Apple", "Avocado", "Banana", "Pineapple", "Kiwi", "Bell Pepper", "Prickly Pear", "Loquat", "Feijoa", "Pitcher Plant", "Sugar Apple"]
+seedList := [
+    "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Daffodil",
+    "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus",
+    "Dragon Fruit", "Mango", "Grape", "Mushroom", "Pepper", "Cacao",
+    "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud"
+]
 
-gearList := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
+gearList := [
+    "Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler",
+    "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler",
+    "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"
+]
 
-eggList := ["All Eggs"]
-
-seedIndexes := []
-gearIndexes := []
+eggList := [
+    "All Eggs"
+]
 
 JoinArr(arr, delim := ",") {
     result := ""
@@ -83,6 +105,9 @@ JoinArr(arr, delim := ",") {
     }
     return result
 }
+
+seedIndexes := []
+gearIndexes := []
 
 GetOCR() {
     global OCR
@@ -156,19 +181,6 @@ DebugLog(text, newLine := 0){
         text := "[" JoinArr(text) "]"
     }
     FileAppend("`n[" timestamp "] "  text, "debug_log.txt")
-}
-
-OrbitCamera(dx := 50, dy := 0) {
-    ; Press and hold right mouse button
-    Send("{RButton down}")
-    Sleep(20)
-
-    ; Move the mouse relatively
-    MouseMove(dx, dy, 0, "R")
-    Sleep(20)
-
-    ; Release right mouse button
-    Send("{RButton up}")
 }
 
 HoldKey(key, sec) {
@@ -250,7 +262,7 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
 }
 
 StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, CONFIG
+    global macro_running, seedIndexes, gearIndexes, CONFIG, DEBUG_direct_run
     if !macro_running {
 
         ; get all properties from CONFIG["Config"][/(.)_set$/]
@@ -291,7 +303,11 @@ StartMacro(*) {
 
         Sleep(300)
 
-        SetTimer(Master, 100)
+        if(DEBUG_direct_run){
+            Macro()
+        } else {
+            SetTimer(Master, 100)
+        }
     }
 }
 
@@ -488,8 +504,8 @@ setConfigAndIniValue(name, x, y){
     CONFIG['Config'][name "_y"] := y
 }
 
-startButton := window.AddButton("x" x1 " y" 500 " w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y" 500 " w130", "Set Config")
+startButton := window.AddButton("x" x1 " y600 w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y600 w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
@@ -567,157 +583,170 @@ ToT(){
 Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList
 
+    global DEBUG_egg_buy, DEBUG_seed_buy, DEBUG_gear_buy, DEBUG_skip_failsafes, DEBUG_skip_macro_align, macro_running
+
     show_timestamp_tooltip := false
 
-    AlignCamera()
+    if(DEBUG_skip_macro_align == false){
+        AlignCamera()
+    }
 
-    scanCount := CONFIG["Settings"]["failsafe_scan_count"]
+    if(DEBUG_skip_failsafes == false){
 
-    internetFailsafeCount := 0
-    shutdownFailsafeCount := 0
-    otherFailsafeCount := 0
+        scanCount := CONFIG["Settings"]["failsafe_scan_count"]
 
-    SetToolTip("Checking failsafes...")
-    Sleep(1000)
-    SmoothMove(A_ScreenWidth, A_ScreenHeight, 10, 2)
-    Sleep(800)
-    SetToolTip("")
-    i := 1
-    Loop scanCount {
-        if(macro_running = false) {
-            break
-        }
+        internetFailsafeCount := 0
+        shutdownFailsafeCount := 0
+        otherFailsafeCount := 0
 
-        ocr := GetOCR()
-
-        if(CONFIG["Settings"]["internet_failsafe"] == "true"){
-            if(ocr == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect") {
-                internetFailsafeCount++
+        SetToolTip("Checking failsafes...")
+        Sleep(1000)
+        SmoothMove(A_ScreenWidth, A_ScreenHeight, 10, 2)
+        Sleep(800)
+        SetToolTip("")
+        i := 1
+        Loop scanCount {
+            if(macro_running = false) {
+                break
             }
-        }
 
-        if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
-            if(ocr == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect") {
-                shutdownFailsafeCount++
+            ocr := GetOCR()
+
+            if(CONFIG["Settings"]["internet_failsafe"] == "true"){
+                if(ocr == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect") {
+                    internetFailsafeCount++
+                }
             }
-        }
 
-        if(CONFIG["Settings"]["other_failsafe"] == "true"){
-            if(RegExMatch(ocr, "Disconnected (.*) Leave Reconnect")) {
-                otherFailsafeCount++
+            if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
+                if(ocr == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect") {
+                    shutdownFailsafeCount++
+                }
             }
+
+            if(CONFIG["Settings"]["other_failsafe"] == "true"){
+                if(RegExMatch(ocr, "Disconnected (.*) Leave Reconnect")) {
+                    otherFailsafeCount++
+                }
+            }
+
+            i++
         }
 
-        i++
-    }
+        if(internetFailsafeCount > (scanCount / 2)){
+            MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
+            ExitApp
+            return
+        }
 
-    if(internetFailsafeCount > (scanCount / 2)){
-        MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
-        ExitApp
-        return
-    }
+        if(shutdownFailsafeCount > (scanCount / 2)){
+            MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
+            ExitApp
+            return
+        }
 
-    if(shutdownFailsafeCount > (scanCount / 2)){
-        MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
-        ExitApp
-        return
-    }
+        if(otherFailsafeCount > (scanCount / 2)){
+            MsgBox("Game was terminated for an unspecified reason`nMacro has been terminated.`n" ToT())
+            ExitApp
+            return
+        }
 
-    if(otherFailsafeCount > (scanCount / 2)){
-        MsgBox("Game was terminated for an unspecified reason`nMacro has been terminated.`n" ToT())
-        ExitApp
-        return
+        SetToolTip("")
+        Sleep(1000)
     }
-
-    SetToolTip("")
-    Sleep(1000)
 
     ; enter seed shop
-    ClickUIButton("seeds")
-    Sleep(300)
-    Press("E")
-    Sleep(2000)
+    if(DEBUG_seed_buy){
+        ClickUIButton("seeds")
+        Sleep(300)
+        Press("E")
+        Sleep(2000)
 
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
-    Loop 100 {
-        if(macro_running = false) {
-            break
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+        Loop 100 {
+            if(macro_running = false) {
+                break
+            }
+            Send("{WheelDown}")
         }
-        Send("{WheelDown}")
+        Sleep(500)
+        Press("\")
+
+        ; buy seeds
+        seedDiffs := GetDiffs(seedIndexes)
+        seedDiffs[1] -= 1
+        ; loop through seedIndexes to buy the right seeds
+        for i, seedIndex in seedDiffs {
+            if(macro_running = false) {
+                break
+            }
+            SetToolTip("Buying " seedList[seedIndexes[i]] " seed if in stock")
+            Press("S", seedIndex)
+            Press("Enter")
+            Press("S")
+
+            Press("Enter", 30, 50)
+            
+            Press("W")
+            Press("Enter")
+            SetToolTip("")
+        }
+        Press("\")
+        ClickUIButton("seed exit")
     }
-    Sleep(500)
-    Press("\")
 
-    ; buy seeds
-    seedDiffs := GetDiffs(seedIndexes)
-    seedDiffs[1] -= 1
-    ; loop through seedIndexes to buy the right seeds
-    for i, seedIndex in seedDiffs {
-        if(macro_running = false) {
-            break
-        }
-        SetToolTip("Buying " seedList[seedIndexes[i]] " seed if in stock")
-        Press("S", seedIndex)
-        Press("Enter")
-        Press("S")
+    if(DEBUG_gear_buy){
+        Sleep(1000)
 
-        Press("Enter", 30, 50)
+        ; go to gear shop
+        Sleep(500)
+        Press("2", 1)
+        LeftClick()
+        Sleep(500)
+        Press("E", 1)
+
+        ; enter gear shop
+        Sleep(2000)
+        ClickUIButton("gear")
+        Sleep(2000)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
         
-        Press("W")
-        Press("Enter")
-        SetToolTip("")
-    }
-    Press("\")
-    ClickUIButton("seed exit")
-    Sleep(1000)
-
-    ; go to gear shop
-    Sleep(500)
-    Press("2", 1)
-    LeftClick()
-    Sleep(500)
-    Press("E", 1)
-
-    ; enter gear shop
-    Sleep(2000)
-    ClickUIButton("gear")
-    Sleep(2000)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
-    
-    Loop 100 {
-        if(macro_running = false) {
-            break
+        Loop 100 {
+            if(macro_running = false) {
+                break
+            }
+            Send("{WheelDown}")
         }
-        Send("{WheelDown}")
-    }
-    Sleep(500)
-    Press("\")
+        Sleep(500)
+        Press("\")
 
-    ; buy gears
-    gearDiffs := GetDiffs(gearIndexes)
-    gearDiffs[1] -= 1
+        ; buy gears
+        gearDiffs := GetDiffs(gearIndexes)
+        gearDiffs[1] -= 1
 
-    for i, gearIndex in gearDiffs {
-        if(macro_running = false) {
-            break
+        for i, gearIndex in gearDiffs {
+            if(macro_running = false) {
+                break
+            }
+
+            SetToolTip("Buying " gearList[gearIndexes[i]] " gear if in stock")
+            Press("S", gearIndex)
+            Press("Enter")
+            Press("S")
+
+            Press("Enter", 6, 50)
+            
+            Press("W")
+            Press("Enter")
+            SetToolTip("")
         }
-
-        SetToolTip("Buying " gearList[gearIndexes[i]] " gear if in stock")
-        Press("S", gearIndex)
-        Press("Enter")
-        Press("S")
-
-        Press("Enter", 6, 50)
-        
-        Press("W")
-        Press("Enter")
-        SetToolTip("")
+        Press("\")
+        ClickUIButton("gear exit")
     }
-    Press("\")
-    ClickUIButton("gear exit")
 
     buyAllEggs := CONFIG['Eggs']["All Eggs"] = "true"
-    if(trigger_egg_macro && buyAllEggs) {
+
+    if(trigger_egg_macro && buyAllEggs && DEBUG_egg_buy) {
         Sleep(100)
         HoldKey("S", 0.9)
         Press("E")
