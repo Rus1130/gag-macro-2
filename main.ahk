@@ -17,7 +17,7 @@ settingsFile := "settings.ini"
 DEBUG_egg_buy := true
 DEBUG_seed_buy := true
 DEBUG_gear_buy := true
-DEBUG_skip_failsafes := true
+DEBUG_skip_failsafes := false
 DEBUG_skip_macro_align := false
 DEBUG_direct_run := false
 
