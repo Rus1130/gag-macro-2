@@ -3,8 +3,9 @@ This is a macro for the hit Roblox game Grow a Garden.
 1. Make sure that AutoHotKey version 2.0 is installed on your computer. You can download it from [here](https://www.autohotkey.com/).
 2. Run `main.ahk`.
 3. Make sure that shiftlock is set to **off** and your camera mode is set to **Default (Classic)** and your movement mode is **Default (Keyboard)**.
-4. The Recall Wrench should be in your **2nd** hotbar slot, and should not be equipped. The macro will automatically equip it when needed.
-5. In order to run the macro, make sure that you click the "Set Config" button and follow the directions on-screen. This needs to be done only once, but can be done as many times as you want. This allows for certain variables to be set that cannot normally be changed by the user via the UI. **YOU DO NOT NEED TO CLICK "SET CONFIG" IN ORDER TO SET THE BUY OPTIONS FOR THE MACRO.**
+4. Fullscreen must be **ENABLED**.
+5. The Recall Wrench should be in your **2nd** hotbar slot, and should not be equipped. The macro will automatically equip it when needed.
+6. In order to run the macro, make sure that you click the "Set Config" button and follow the directions on-screen. This needs to be done only once, but can be done as many times as you want. This allows for certain variables to be set that cannot normally be changed by the user via the UI. **YOU DO NOT NEED TO CLICK "SET CONFIG" IN ORDER TO SET THE BUY OPTIONS FOR THE MACRO.**
 # Features
 * Automatically buys seeds, gear, and eggs (duh)
 * Automatic character alignment
@@ -31,6 +32,7 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 | Name                    | Image                                                                              | 2nd Image                                                           |
 |-------------------------|------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | `seed_shop_button`      | ![seed_shop_button](./imgs/seed_shop_button.png "Seed Shop Button")                |                                                                     |
+| `seed_shop_reset`       | ![seed_shop_reset](./imgs/seed_shop_reset.png "Seed Shop Reset")                   |                                                                     |
 | `seed_shop_exit_button` | ![seed_shop_exit_button](./imgs/seed_shop_exit_button.png "Seed Shop Exit Button") |                                                                     |
 | `garden_button`         | ![garden_button](./imgs/garden_button.png "Garden Button")                         |                                                                     |
 | `sell_button`           | ![sell_button](./imgs/sell_button.png "Sell Button")                               |                                                                     |
@@ -42,4 +44,4 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 # Tips
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.
 # Keep in Mind
-* The macro may not force close itself on `kill_key` press if it is pressed during set up. This is why `window_failsafe` is enabled by default.
+* The macro may not not always force close when `kill_key` is pressed. This is why `window_failsafe` is enabled by default.

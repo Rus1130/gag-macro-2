@@ -1,6 +1,7 @@
 #Requires AutoHotkey v2.0
 #Include ./lib/OCR.ahk
 #Include ./lib/FuzzyMatch.ahk
+#SingleInstance Force
 
 Fuz := Fuzzy()
 
@@ -16,7 +17,7 @@ settingsFile := "settings.ini"
 DEBUG_egg_buy := true
 DEBUG_seed_buy := true
 DEBUG_gear_buy := true
-DEBUG_skip_failsafes := false
+DEBUG_skip_failsafes := true
 DEBUG_skip_macro_align := false
 DEBUG_direct_run := false
 
@@ -245,7 +246,7 @@ LeftClick(){
     Click("left")
 }
 
-SmoothMove(toX, toY, steps := 50, delay := 5) {
+SmoothMove(toX, toY, steps := 10, delay := 2) {
     MouseGetPos(&x, &y)
     dx := (toX - x) / steps
     dy := (toY - y) / steps
@@ -320,7 +321,7 @@ AlignCamera() {
     SetToolTip("Reset camera orbit")
     Press("LShift")
     Sleep(500)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight, 10, 2)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight)
     SetToolTip("")
 
     ; turn off shift lock
@@ -333,10 +334,10 @@ AlignCamera() {
         if(macro_running = false) {
             break
         }
-        ClickUIButton("seeds")
-        ClickUIButton("sell")
+        ClickScreen("seeds")
+        ClickScreen("sell")
     }
-    ClickUIButton("seeds")
+    ClickScreen("seeds")
     SetToolTip("")
 
     ; turn off follow camera
@@ -344,11 +345,11 @@ AlignCamera() {
 
     ; reset zoom
     Sleep(800)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
     Sleep(800)
-    ClickUIButton("garden")
+    ClickScreen("garden")
     Sleep(2000)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
     LeftClick()
     SetToolTip("Resetting zoom")
     Loop 100 {
@@ -372,39 +373,44 @@ AlignCamera() {
  * 
  * @param name - "gear", "gear exit", "seeds", "seed exit", "egg buy", "egg exit", "sell", "garden"
  */
-ClickUIButton(name){
+ClickScreen(name){
     ; gear, gear exit, seed, seed exit, egg, sell, garden
+    c := CONFIG['Config']
 
     if(name == "gear"){
-        SmoothMove(CONFIG['Config']["gear_enter_point_x"], CONFIG['Config']["gear_enter_point_y"], 10, 0.5)
+        SmoothMove(c["gear_enter_point_x"],c["gear_enter_point_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "gear exit") {
-        SmoothMove(CONFIG['Config']["gear_shop_exit_button_x"], CONFIG['Config']["gear_shop_exit_button_y"], 10, 0.5)
+        SmoothMove(c["gear_shop_exit_button_x"], c["gear_shop_exit_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "seeds") {
-        SmoothMove(CONFIG['Config']["seed_shop_button_x"], CONFIG['Config']["seed_shop_button_y"], 10, 0.5)
+        SmoothMove(c["seed_shop_button_x"], c["seed_shop_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "seed exit") {
-        SmoothMove(CONFIG['Config']["seed_shop_exit_button_x"], CONFIG['Config']["seed_shop_exit_button_y"], 10, 0.5)
+        SmoothMove(c["seed_shop_exit_button_x"], c["seed_shop_exit_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "egg buy") {
-        SmoothMove(CONFIG['Config']["egg_buy_button_x"], CONFIG['Config']["egg_buy_button_y"], 10, 0.5)
+        SmoothMove(c["egg_buy_button_x"], c["egg_buy_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "egg exit") {
-        SmoothMove(CONFIG['Config']["egg_shop_exit_button_x"], CONFIG['Config']["egg_shop_exit_button_y"], 10, 0.5)
+        SmoothMove(c["egg_shop_exit_button_x"], c["egg_shop_exit_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "sell") {
-        SmoothMove(CONFIG['Config']["sell_button_x"], CONFIG['Config']["sell_button_y"], 10, 0.5)
+        SmoothMove(c["sell_button_x"], c["sell_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "garden") {
-        SmoothMove(CONFIG['Config']["garden_button_x"], CONFIG['Config']["garden_button_y"], 10, 0.5)
+        SmoothMove(c["garden_button_x"], c["garden_button_y"],, 0.5)
+        Sleep(100)
+        LeftClick()
+    } else if(name == "seed reset") {
+        SmoothMove(c["seed_shop_reset_x"], c["seed_shop_reset_y"],, 0.5)
         Sleep(100)
         LeftClick()
     }
@@ -422,8 +428,19 @@ setConfig(*) {
 
         waitForMouseClick("Click on the `"Seeds`" button at the top of the screen (seed_shop_button)")
         setConfigAndIniValue("seed_shop_button", mouse_x, mouse_y)
+        Sleep(2000)
         Press("E")
         Sleep(2200)
+
+
+        ; scroll down to bottom
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
+        Send("{WheelDown 100}")
+        waitForMouseClick("Click on the Burning Bud seed (seed_shop_reset)")
+        Sleep(50)
+        LeftClick()
+        setConfigAndIniValue("seed_shop_reset", mouse_x, mouse_y)
+        Sleep(1000)
 
         waitForMouseClick("Click on the `"X`" button at the top right of the seed shop (seed_shop_exit_button)")
         setConfigAndIniValue("seed_shop_exit_button", mouse_x, mouse_y)
@@ -581,18 +598,21 @@ ToT(){
 }
 
 Macro() {
-    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList
+    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList, first_run
 
     global DEBUG_egg_buy, DEBUG_seed_buy, DEBUG_gear_buy, DEBUG_skip_failsafes, DEBUG_skip_macro_align, macro_running
 
     show_timestamp_tooltip := false
+
+    if(first_run){
+        ClickScreen("seed exit")
+    }
 
     if(DEBUG_skip_macro_align == false){
         AlignCamera()
     }
 
     if(DEBUG_skip_failsafes == false){
-
         scanCount := CONFIG["Settings"]["failsafe_scan_count"]
 
         internetFailsafeCount := 0
@@ -601,7 +621,7 @@ Macro() {
 
         SetToolTip("Checking failsafes...")
         Sleep(1000)
-        SmoothMove(A_ScreenWidth, A_ScreenHeight, 10, 2)
+        SmoothMove(A_ScreenWidth, A_ScreenHeight)
         Sleep(800)
         SetToolTip("")
         i := 1
@@ -652,24 +672,27 @@ Macro() {
         }
 
         SetToolTip("")
-        Sleep(1000)
     }
+
+    Sleep(1000)
 
     ; enter seed shop
     if(DEBUG_seed_buy){
-        ClickUIButton("seeds")
-        Sleep(300)
+        ClickScreen("seeds")
+        Sleep(1000)
         Press("E")
-        Sleep(2000)
+        Sleep(2500)
 
-        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
         Loop 100 {
             if(macro_running = false) {
                 break
             }
             Send("{WheelDown}")
         }
-        Sleep(500)
+        Sleep(1000)
+        ClickScreen("seed reset")
+        Sleep(800)
         Press("\")
 
         ; buy seeds
@@ -692,7 +715,7 @@ Macro() {
             SetToolTip("")
         }
         Press("\")
-        ClickUIButton("seed exit")
+        ClickScreen("seed exit")
     }
 
     if(DEBUG_gear_buy){
@@ -707,9 +730,9 @@ Macro() {
 
         ; enter gear shop
         Sleep(2000)
-        ClickUIButton("gear")
+        ClickScreen("gear")
         Sleep(2000)
-        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
         
         Loop 100 {
             if(macro_running = false) {
@@ -717,7 +740,9 @@ Macro() {
             }
             Send("{WheelDown}")
         }
-        Sleep(500)
+        Sleep(1000)
+        ClickScreen("seed reset")
+        Sleep(800)
         Press("\")
 
         ; buy gears
@@ -741,7 +766,7 @@ Macro() {
             SetToolTip("")
         }
         Press("\")
-        ClickUIButton("gear exit")
+        ClickScreen("gear exit")
     }
 
     buyAllEggs := CONFIG['Eggs']["All Eggs"] = "true"
@@ -751,31 +776,31 @@ Macro() {
         HoldKey("S", 0.9)
         Press("E")
         Sleep(1000)
-        ClickUIButton("egg buy")
+        ClickScreen("egg buy")
         Sleep(100)
-        ClickUIButton("egg exit")
+        ClickScreen("egg exit")
 
         Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
-        ClickUIButton("egg buy")
+        ClickScreen("egg buy")
         Sleep(100)
-        ClickUIButton("egg exit")
+        ClickScreen("egg exit")
 
         Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
-        ClickUIButton("egg buy")
+        ClickScreen("egg buy")
         Sleep(100)
-        ClickUIButton("egg exit")
+        ClickScreen("egg exit")
 
         trigger_egg_macro := false
     }
 
-    ClickUIButton("garden")
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2, 10, 2)
+    ClickScreen("garden")
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
 
     show_timestamp_tooltip := true
 }
