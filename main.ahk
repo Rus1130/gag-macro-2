@@ -326,6 +326,7 @@ StartMacro(*) {
 }
 
 AlignCamera() {
+    global first_run
     ; turn on shift lock + follow camera
     ManyPress("Esc Tab D S D D Esc")
     Sleep(1000)
@@ -357,29 +358,32 @@ AlignCamera() {
     ManyPress("Esc Tab S D D Esc")
 
     ; reset zoom
-    Sleep(800)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
-    Sleep(800)
-    ClickScreen("garden")
-    Sleep(2000)
-    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
-    Sleep(1000)
-    LeftClick()
-    SetToolTip("Resetting zoom")
-    Loop 100 {
-        if(macro_running = false) {
-            break
+    if(first_run){
+        Sleep(800)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
+        Sleep(800)
+        ClickScreen("garden")
+        Sleep(2000)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
+        Sleep(1000)
+        LeftClick()
+        SetToolTip("Resetting zoom")
+        Loop 100 {
+            if(macro_running = false) {
+                break
+            }
+            Send("{WheelUp}")
         }
-        Send("{WheelUp}")
-    }
-    Sleep(500)
-    LeftClick()
-    LeftClick()
-    Loop 13 {
-        if(macro_running = false) {
-            break
+        Sleep(500)
+        LeftClick()
+        LeftClick()
+        Loop 8 {
+            if(macro_running = false) {
+                break
+            }
+            Send("{WheelDown}")
+            Sleep(50)
         }
-        Send("{WheelDown}")
     }
     SetToolTip("")
 }
@@ -455,6 +459,7 @@ setConfig(*) {
         setConfigAndIniValue("sell_button", mouse_x, mouse_y)
         Sleep(1000)
 
+        first_run := true
         AlignCamera()
 
         Sleep(1000)
