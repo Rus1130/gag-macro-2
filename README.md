@@ -37,10 +37,8 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 | `sell_button`           | ![sell_button](./imgs/sell_button.png "Sell Button")                               |
 | `gear_enter_point`      | ![gear_enter_point](./imgs/gear_enter_point.png "Gear Enter Point")                |
 | `gear_shop_exit_button` | ![gear_shop_exit_button](./imgs/gear_shop_exit_button.png "Gear Shop Exit Button") |
-| `egg_enter_point`       | ![egg_enter_point](./imgs/egg_buy_button_1.png "Egg Shop Enter Point")             | (REDO)
-| `egg_shop_exit_button`  | ![egg_shop_exit_button](./imgs/egg_shop_exit_button.png "Egg Shop Exit Button")    | (REDO)
+| `egg_enter_point`       | ![egg_enter_point](./imgs/egg_enter_point.png "Egg Shop Enter Point")             |
+| `egg_shop_exit_button`  | ![egg_shop_exit_button](./imgs/egg_shop_exit_button.png "Egg Shop Exit Button")    |
 
 # Tips
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.
-# Keep in Mind
-* The macro may not not always force close when `kill_key` is pressed. This is why `window_failsafe` is enabled by default.
