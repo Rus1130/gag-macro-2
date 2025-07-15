@@ -29,17 +29,16 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 * These are the points that the macro will ask you for:
 * **Note**: click anywhere inside of the rectangles in the images
 
-| Name                    | Image                                                                              | 2nd Image                                                           |
-|-------------------------|------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| `seed_shop_button`      | ![seed_shop_button](./imgs/seed_shop_button.png "Seed Shop Button")                |                                                                     |
-| `seed_shop_reset`       | ![seed_shop_reset](./imgs/seed_shop_reset.png "Seed Shop Reset")                   |                                                                     |
-| `seed_shop_exit_button` | ![seed_shop_exit_button](./imgs/seed_shop_exit_button.png "Seed Shop Exit Button") |                                                                     |
-| `garden_button`         | ![garden_button](./imgs/garden_button.png "Garden Button")                         |                                                                     |
-| `sell_button`           | ![sell_button](./imgs/sell_button.png "Sell Button")                               |                                                                     |
-| `gear_enter_point`      | ![gear_enter_point](./imgs/gear_enter_point.png "Gear Enter Point")                |                                                                     |
-| `gear_shop_exit_button` | ![gear_shop_exit_button](./imgs/gear_shop_exit_button.png "Gear Shop Exit Button") |                                                                     |
-| `egg_buy_button`        | ![egg_buy_button_1](./imgs/egg_buy_button_1.png "Egg Buy Button 1")                | ![egg_buy_button_2](./imgs/egg_buy_button_2.png "Egg Buy Button 2") |
-| `egg_shop_exit_button`  | ![egg_shop_exit_button](./imgs/egg_shop_exit_button.png "Egg Shop Exit Button")    |                                                                     |
+| Name                    | Image                                                                              |
+|-------------------------|------------------------------------------------------------------------------------|
+| `seed_shop_button`      | ![seed_shop_button](./imgs/seed_shop_button.png "Seed Shop Button")                |
+| `seed_shop_exit_button` | ![seed_shop_exit_button](./imgs/seed_shop_exit_button.png "Seed Shop Exit Button") |
+| `garden_button`         | ![garden_button](./imgs/garden_button.png "Garden Button")                         |
+| `sell_button`           | ![sell_button](./imgs/sell_button.png "Sell Button")                               |
+| `gear_enter_point`      | ![gear_enter_point](./imgs/gear_enter_point.png "Gear Enter Point")                |
+| `gear_shop_exit_button` | ![gear_shop_exit_button](./imgs/gear_shop_exit_button.png "Gear Shop Exit Button") |
+| `egg_enter_point`       | ![egg_enter_point](./imgs/egg_buy_button_1.png "Egg Shop Enter Point")             | (REDO)
+| `egg_shop_exit_button`  | ![egg_shop_exit_button](./imgs/egg_shop_exit_button.png "Egg Shop Exit Button")    | (REDO)
 
 # Tips
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.

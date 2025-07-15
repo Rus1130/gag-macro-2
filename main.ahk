@@ -7,19 +7,19 @@ Fuz := Fuzzy()
 
 settingsFile := "settings.ini"
 
-; DEBUG_egg_buy := true
-; DEBUG_seed_buy := true
-; DEBUG_gear_buy := true
-; DEBUG_skip_failsafes := false
-; DEBUG_skip_macro_align := false
-; DEBUG_direct_run := false
-
 DEBUG_egg_buy := true
 DEBUG_seed_buy := true
 DEBUG_gear_buy := true
 DEBUG_skip_failsafes := false
 DEBUG_skip_macro_align := false
 DEBUG_direct_run := false
+
+; DEBUG_egg_buy := true
+; DEBUG_seed_buy := false
+; DEBUG_gear_buy := false
+; DEBUG_skip_failsafes := true
+; DEBUG_skip_macro_align := true
+; DEBUG_direct_run := true
 
 ; Read and parse JSON
 if !FileExist(settingsFile) {
@@ -80,20 +80,22 @@ x2 := x1 + w + 20
 x3 := x2 + w + 20
 
 seedList := [
-    "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Daffodil",
+    "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn", "Daffodil",
     "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus",
     "Dragon Fruit", "Mango", "Grape", "Mushroom", "Pepper", "Cacao",
-    "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud"
+    "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud", "Giant Pinecone"
 ]
 
 gearList := [
     "Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler",
-    "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler",
-    "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"
+    "Medium Toy", "Medium Treat", "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", 
+    "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot",
+    "Levelup Lolipop"
 ]
 
 eggList := [
-    "All Eggs"
+    "Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg",
+    "Paradise Egg", "Bug Egg"
 ]
 
 JoinArr(arr, delim := ",") {
@@ -107,8 +109,11 @@ JoinArr(arr, delim := ",") {
     return result
 }
 
+Array.Prototype.DefineProp("Join", { Call: JoinArr })
+
 seedIndexes := []
 gearIndexes := []
+eggIndexes := []
 
 GetOCR() {
     global OCR
@@ -263,7 +268,7 @@ SmoothMove(toX, toY, steps := 10, delay := 2) {
 }
 
 StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, CONFIG, DEBUG_direct_run
+    global macro_running, seedIndexes, gearIndexes, eggIndexes, CONFIG, DEBUG_direct_run, trigger_egg_macro
     if !macro_running {
 
         ; get all properties from CONFIG["Config"][/(.)_set$/]
@@ -295,6 +300,13 @@ StartMacro(*) {
             }
         }
 
+        for i, chk in eggCheckboxes {
+            SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
+            if(chk.Value == 1) {
+                eggIndexes.Push(i)
+            }
+        }
+
         macro_running := true
         SetToolTip("Starting macro...")
         Sleep(CONFIG['Settings']["grace"] * 1000)
@@ -305,6 +317,7 @@ StartMacro(*) {
         Sleep(300)
 
         if(DEBUG_direct_run){
+            trigger_egg_macro := true
             Macro()
         } else {
             SetTimer(Master, 100)
@@ -350,6 +363,7 @@ AlignCamera() {
     ClickScreen("garden")
     Sleep(2000)
     SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
+    Sleep(1000)
     LeftClick()
     SetToolTip("Resetting zoom")
     Loop 100 {
@@ -367,11 +381,12 @@ AlignCamera() {
         }
         Send("{WheelDown}")
     }
+    SetToolTip("")
 }
 
 /**
  * 
- * @param name - "gear", "gear exit", "seeds", "seed exit", "egg buy", "egg exit", "sell", "garden"
+ * @param name - "gear", "gear exit", "seeds", "seed exit", "egg enter", "egg exit", "sell", "garden"
  */
 ClickScreen(name){
     ; gear, gear exit, seed, seed exit, egg, sell, garden
@@ -393,8 +408,8 @@ ClickScreen(name){
         SmoothMove(c["seed_shop_exit_button_x"], c["seed_shop_exit_button_y"],, 0.5)
         Sleep(100)
         LeftClick()
-    } else if(name == "egg buy") {
-        SmoothMove(c["egg_buy_button_x"], c["egg_buy_button_y"],, 0.5)
+    } else if(name == "egg enter") {
+        SmoothMove(c["egg_enter_point_x"], c["egg_enter_point_y"],, 0.5)
         Sleep(100)
         LeftClick()
     } else if(name == "egg exit") {
@@ -407,10 +422,6 @@ ClickScreen(name){
         LeftClick()
     } else if(name == "garden") {
         SmoothMove(c["garden_button_x"], c["garden_button_y"],, 0.5)
-        Sleep(100)
-        LeftClick()
-    } else if(name == "seed reset") {
-        SmoothMove(c["seed_shop_reset_x"], c["seed_shop_reset_y"],, 0.5)
         Sleep(100)
         LeftClick()
     }
@@ -431,16 +442,6 @@ setConfig(*) {
         Sleep(2000)
         Press("E")
         Sleep(2200)
-
-
-        ; scroll down to bottom
-        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
-        Send("{WheelDown 100}")
-        waitForMouseClick("Click on the Burning Bud seed (seed_shop_reset)")
-        Sleep(50)
-        LeftClick()
-        setConfigAndIniValue("seed_shop_reset", mouse_x, mouse_y)
-        Sleep(1000)
 
         waitForMouseClick("Click on the `"X`" button at the top right of the seed shop (seed_shop_exit_button)")
         setConfigAndIniValue("seed_shop_exit_button", mouse_x, mouse_y)
@@ -472,14 +473,15 @@ setConfig(*) {
         setConfigAndIniValue("gear_shop_exit_button", mouse_x, mouse_y)
         Sleep(1000)
 
-        HoldKey("S", 0.9)
+        HoldKey("S", 0.67)
         Press("E")
-        Sleep(1000)
-        waitForMouseClick("Press the button that has a price in it (e.g. 50,000¢ , 1,000,000¢ , or it can also say `"NO STOCK`") (egg_buy_button)")
-        setConfigAndIniValue("egg_buy_button", mouse_x, mouse_y)
+        Sleep(2200)
+        waitForMouseClick("Click the dialogue option to enter the egg shop (egg_enter_point)")
+        setConfigAndIniValue("egg_enter_point", mouse_x, mouse_y)
         Sleep(1000)
 
         Press("E")
+        Sleep(2000)
         WaitForMouseClick("Click on the `"X`" button at the top right of the egg shop (egg_exit_button)")
         setConfigAndIniValue("egg_shop_exit_button", mouse_x, mouse_y)
         Sleep(1000)
@@ -521,8 +523,8 @@ setConfigAndIniValue(name, x, y){
     CONFIG['Config'][name "_y"] := y
 }
 
-startButton := window.AddButton("x" x1 " y600 w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y600 w130", "Set Config")
+startButton := window.AddButton("x" x1 " y650 w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y650 w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
@@ -537,7 +539,7 @@ Kill(*) {
         SetToolTip("")
         
         MsgBox("Macro stopped.")
-        WinActivate("Rus' Grow a Garden Macro")
+        ExitApp
     }
 }
 
@@ -598,15 +600,16 @@ ToT(){
 }
 
 Macro() {
-    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, show_timestamp_tooltip, seedList, gearList, first_run
+    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, eggIndexes, show_timestamp_tooltip, seedList, gearList, first_run
 
     global DEBUG_egg_buy, DEBUG_seed_buy, DEBUG_gear_buy, DEBUG_skip_failsafes, DEBUG_skip_macro_align, macro_running
 
     show_timestamp_tooltip := false
 
-    if(first_run){
-        ClickScreen("seed exit")
-    }
+    ; IOAGTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+    ; if(first_run){
+    ;     ClickScreen("seed exit")
+    ; }
 
     if(DEBUG_skip_macro_align == false){
         AlignCamera()
@@ -691,8 +694,6 @@ Macro() {
             Send("{WheelDown}")
         }
         Sleep(1000)
-        ClickScreen("seed reset")
-        Sleep(800)
         Press("\")
 
         ; buy seeds
@@ -715,6 +716,7 @@ Macro() {
             SetToolTip("")
         }
         Press("\")
+        Sleep(900)
         ClickScreen("seed exit")
     }
 
@@ -733,7 +735,7 @@ Macro() {
         ClickScreen("gear")
         Sleep(2000)
         SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
-        
+        Sleep(1000)
         Loop 100 {
             if(macro_running = false) {
                 break
@@ -741,8 +743,6 @@ Macro() {
             Send("{WheelDown}")
         }
         Sleep(1000)
-        ClickScreen("seed reset")
-        Sleep(800)
         Press("\")
 
         ; buy gears
@@ -766,35 +766,59 @@ Macro() {
             SetToolTip("")
         }
         Press("\")
+        Sleep(900)
         ClickScreen("gear exit")
     }
 
-    buyAllEggs := CONFIG['Eggs']["All Eggs"] = "true"
-
-    if(trigger_egg_macro && buyAllEggs && DEBUG_egg_buy) {
+    if(trigger_egg_macro && DEBUG_egg_buy) {
         Sleep(100)
-        HoldKey("S", 0.9)
+        HoldKey("S", 0.67)
+        Sleep(500)
         Press("E")
+        Sleep(2200)
+        ClickScreen("egg enter")
+        Sleep(2000)
+        SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
         Sleep(1000)
-        ClickScreen("egg buy")
-        Sleep(100)
+        Loop 100 {
+            if(macro_running = false) {
+                break
+            }
+            Send("{WheelDown}")
+        }
+        Sleep(1000)
+        Press("\")
+
+        ; get diffs
+        eggDiffs := GetDiffs(eggIndexes)
+        eggDiffs[1] -= 1
+
+
+        for i, eggIndex in eggDiffs {
+            if(macro_running = false) {
+                break
+            }
+            SetToolTip("Buying " eggList[eggIndexes[i]] " gear if in stock")
+            Press("S", eggDiffs[i] * 2)
+            Sleep(200)
+            Press("Enter")
+            Sleep(200)
+            Press("S", 2)
+            Sleep(200)
+            Press("Enter", 3, 50)
+            Sleep(200)
+            Press("W")
+            Sleep(200)
+            Press("Enter")
+            Sleep(200)
+            SetToolTip("")
+            Sleep(1000)
+        }
+
+        Press("\")
+        Sleep(900)
         ClickScreen("egg exit")
 
-        Sleep(100)
-        HoldKey("S", 0.18)
-        Press("E")
-        Sleep(1000)
-        ClickScreen("egg buy")
-        Sleep(100)
-        ClickScreen("egg exit")
-
-        Sleep(100)
-        HoldKey("S", 0.18)
-        Press("E")
-        Sleep(1000)
-        ClickScreen("egg buy")
-        Sleep(100)
-        ClickScreen("egg exit")
 
         trigger_egg_macro := false
     }
