@@ -382,7 +382,7 @@ AlignCamera() {
                 break
             }
             Send("{WheelDown}")
-            Sleep(50)
+            Sleep(150)
         }
     }
     SetToolTip("")
