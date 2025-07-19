@@ -358,7 +358,7 @@ AlignCamera() {
     ManyPress("Esc Tab S D D Esc")
 
     ; reset zoom
-    if(first_run){
+    if(first_run == true){
         Sleep(800)
         SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
         Sleep(800)
