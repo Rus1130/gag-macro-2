@@ -218,6 +218,7 @@ GetDiffs(arr) {
 }
 
 Press(key, num := 1, delay := 100) {
+    Sleep(20)
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
         SetToolTip("")
@@ -228,7 +229,7 @@ Press(key, num := 1, delay := 100) {
         if(macro_running == false) {
             break
         }
-        ; get the current focused window
+        
         Sleep(delay)
         Send("{" key "}")
         if(macro_running == false) {
@@ -240,7 +241,7 @@ Press(key, num := 1, delay := 100) {
 SetToolTip(text) {
     global CONFIG
     if(!macro_running) {
-        ToolTip("")  ; Clear tooltip if macro is not running
+        ToolTip("")
         return
     } else if(CONFIG['Settings']["show_tooltips"] = "true") {
         ToolTip(text)
