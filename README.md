@@ -11,6 +11,8 @@ This is a macro for the hit Roblox game Grow a Garden.
 * Automatic character alignment
 * Automatic camera alignment
 * Failsafe checks to ensure that the macro does not run when it shouldn't
+# Important
+If the macro begins to try to buy stuff with robux, navigate to line 96 of `main.ahk` (for seeds), or line 123 (for gear). Then, find the line that says the corresponding item name, and change the `1` to a `0`. If the macro starts to go to the shop on the left, change the `0` to a `1` in the corresponding item line.
 ## Failsafes
 This macro has several failsafes to ensure that it does not run when it shouldn't. For each enabled failsafe, the macro will scan the screen for certain text for a certain number of times before terminating. If the text is found for more than half of the scans, the macro will terminate. Failsafes are checked at the beginning of each macro sequence (so every `shop_timer` interval).
 # settings.ini
@@ -37,7 +39,7 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 | `sell_button`           | ![sell_button](./imgs/sell_button.png "Sell Button")                               |
 | `gear_enter_point`      | ![gear_enter_point](./imgs/gear_enter_point.png "Gear Enter Point")                |
 | `gear_shop_exit_button` | ![gear_shop_exit_button](./imgs/gear_shop_exit_button.png "Gear Shop Exit Button") |
-| `egg_enter_point`       | ![egg_enter_point](./imgs/egg_enter_point.png "Egg Shop Enter Point")             |
+| `egg_enter_point`       | ![egg_enter_point](./imgs/egg_enter_point.png "Egg Shop Enter Point")              |
 | `egg_shop_exit_button`  | ![egg_shop_exit_button](./imgs/egg_shop_exit_button.png "Egg Shop Exit Button")    |
 
 # Tips
