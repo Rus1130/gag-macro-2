@@ -93,52 +93,6 @@ gearList := [
     "Levelup Lolipop"
 ]
 
-seedCorrectionList := [
-    1, ; carrot 
-    1, ; strawberry
-    1, ; blueberry
-    1, ; orange tulip
-    1, ; tomato
-    1, ; corn
-    1, ; daffodil
-    1, ; watermelon
-    1, ; pumpkin
-    1, ; apple
-    1, ; bamboo
-    1, ; coconut
-    1, ; cactus
-    1, ; dragon fruit
-    1, ; mango
-    1, ; grape
-    1, ; mushroom
-    1, ; pepper
-    1, ; cacao
-    1, ; beanstalk
-    1, ; ember lily
-    1, ; sugar apple
-    1, ; burning bud
-    1, ; giant pinecone
-]
-
-gearCorrectionList := [
-    1, ; watering can
-    0, ; trowel
-    1, ; recall wrench
-    1, ; basic sprinkler
-    1, ; advanced sprinkler
-    1, ; medium toy
-    1, ; medium treat
-    1, ; godly sprinkler
-    1, ; magnifying glass
-    1, ; tanning mirror
-    1, ; master sprinkler
-    1, ; cleaning spray
-    1, ; favorite tool
-    1, ; harvest tool
-    1, ; friendship pot
-    1  ; levelup lolipop
-]
-
 eggList := [
     "Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg",
     "Paradise Egg", "Bug Egg"
@@ -264,7 +218,6 @@ GetDiffs(arr) {
 }
 
 Press(key, num := 1, delay := 100) {
-    Sleep(20)
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
         SetToolTip("")
@@ -275,7 +228,7 @@ Press(key, num := 1, delay := 100) {
         if(macro_running == false) {
             break
         }
-        
+        ; get the current focused window
         Sleep(delay)
         Send("{" key "}")
         if(macro_running == false) {
@@ -287,7 +240,7 @@ Press(key, num := 1, delay := 100) {
 SetToolTip(text) {
     global CONFIG
     if(!macro_running) {
-        ToolTip("")
+        ToolTip("")  ; Clear tooltip if macro is not running
         return
     } else if(CONFIG['Settings']["show_tooltips"] = "true") {
         ToolTip(text)
@@ -656,10 +609,9 @@ Macro() {
 
     global DEBUG_egg_buy, DEBUG_seed_buy, DEBUG_gear_buy, DEBUG_skip_failsafes, DEBUG_skip_macro_align, macro_running
 
-    global gearCorrectionList, seedCorrectionList
-
     show_timestamp_tooltip := false
 
+    ; IOAGTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     ; if(first_run){
     ;     ClickScreen("seed exit")
     ; }
@@ -748,9 +700,7 @@ Macro() {
         }
         Sleep(1000)
         Press("\")
-        Sleep(1000)
-        Press("W", seedList.Length, 100)
-    
+
         ; buy seeds
         seedDiffs := GetDiffs(seedIndexes)
         seedDiffs[1] -= 1
@@ -763,11 +713,6 @@ Macro() {
             Press("S", seedIndex)
             Press("Enter")
             Press("S")
-            if(seedCorrectionList[i] == 1) {
-                Sleep(100)
-                Press("A")
-            }
-            Sleep(100)
 
             Press("Enter", 30, 50)
             
@@ -804,8 +749,6 @@ Macro() {
         }
         Sleep(1000)
         Press("\")
-        Sleep(1000)
-        Press("W", gearList.Length, 100)
 
         ; buy gears
         gearDiffs := GetDiffs(gearIndexes)
@@ -820,11 +763,6 @@ Macro() {
             Press("S", gearIndex)
             Press("Enter")
             Press("S")
-            if(gearCorrectionList[i] == 1) {
-                Sleep(100)
-                Press("A")
-            }
-            Sleep(100)
 
             Press("Enter", 6, 50)
             
@@ -855,35 +793,35 @@ Macro() {
         }
         Sleep(1000)
         Press("\")
-        Sleep(500)
-        Press("W", (eggList.Length * 2) - 1, 100)
 
         ; get diffs
         eggDiffs := GetDiffs(eggIndexes)
         eggDiffs[1] -= 1
+
 
         for i, eggIndex in eggDiffs {
             if(macro_running = false) {
                 break
             }
             SetToolTip("Buying " eggList[eggIndexes[i]] " gear if in stock")
-            Press("S", eggDiffs[i])
+            Press("S", eggDiffs[i] * 2)
             Sleep(200)
             Press("Enter")
             Sleep(200)
-            Press("S")
+            Press("S", 2)
             Sleep(200)
             Press("Enter", 3, 50)
             Sleep(200)
             Press("W")
-            Sleep(500)
+            Sleep(200)
             Press("Enter")
-            Sleep(500)
+            Sleep(200)
             SetToolTip("")
+            Sleep(1000)
         }
 
         Press("\")
-        Sleep(1000)
+        Sleep(900)
         ClickScreen("egg exit")
 
 
