@@ -83,7 +83,8 @@ seedList := [
     "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn", "Daffodil",
     "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus",
     "Dragon Fruit", "Mango", "Grape", "Mushroom", "Pepper", "Cacao",
-    "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud", "Giant Pinecone"
+    "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud", "Giant Pinecone",
+    "Elder Strawberry"
 ]
 
 gearList := [
@@ -528,8 +529,8 @@ setConfigAndIniValue(name, x, y){
     CONFIG['Config'][name "_y"] := y
 }
 
-startButton := window.AddButton("x" x1 " y650 w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y650 w130", "Set Config")
+startButton := window.AddButton("x" x1 " y680 w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y680 w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
