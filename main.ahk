@@ -7,12 +7,17 @@ Fuz := Fuzzy()
 
 settingsFile := "settings.ini"
 
+WINDOW_WIDTH := 800
+
 DEBUG_egg_buy := true
 DEBUG_seed_buy := true
 DEBUG_gear_buy := true
 DEBUG_skip_failsafes := false
 DEBUG_skip_macro_align := false
 DEBUG_direct_run := false
+
+TIME_SLOW := 250
+TIME_FAST := 100
 
 ; DEBUG_egg_buy := true
 ; DEBUG_seed_buy := false
@@ -86,6 +91,8 @@ seedList := [
     "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud", "Giant Pinecone",
     "Elder Strawberry"
 ]
+
+WINDOW_HEIGHT := 60 + ((seedList.Length + 1) * 25)
 
 gearList := [
     "Watering Can", "Trading Ticket", "Trowel", "Recall Wrench", "Basic Sprinkler",
@@ -185,37 +192,59 @@ JoinMap(m, delim := "`n") {
     return RTrim(str, delim)  ; remove trailing delimiter
 }
 
+tabControl := window.Add("Tab3", "w" WINDOW_WIDTH " h" (WINDOW_HEIGHT + 25))
+tabControl.Add(["Buying", "Settings"])
+tabControl.UseTab(1)
+
 ; Create GroupBoxes
-; Now populate each column — example for eggs:
 seedCheckboxes := AddItemsToColumn(window, "Seeds", seedList, x1 + 10, y1 + 20)
 gearCheckboxes := AddItemsToColumn(window, "Gears", gearList, x2 + 10, y1 + 20)
 eggCheckboxes := AddItemsToColumn(window, "Eggs", eggList, x3 + 10, y1 + 20)
 
 AddItemsToColumn(gui, label, items, x, startY) {
     global CONFIG
-    y := startY
+    y := startY + 10
     i := 0
-    
-    labelVar := window.addText(" x" x " y" y " h40 w200", label)
+
+    ; Add column label
+    labelVar := gui.AddText("x" x " y" y " h40 w200", label)
     labelVar.SetFont("s16 Bold")
     y += 30
+
+    ; Add 'Select All' checkbox
+    selectAllChk := gui.Add("Checkbox", "x" x " y" y " w200", "Select All")
+    y += 25
 
     checkboxes := []
 
     for key, value in items {
-        chk := window.Add("Checkbox", "x" x " y" y " w200", value)
+        chk := gui.Add("Checkbox", "x" x " y" y " w200", value)
 
-        value := CONFIG[label][value]
-        chk.Value := value = "true"
-
-        i++
-        y += 25
+        saved := CONFIG[label][value]
+        chk.Value := saved = "true"
 
         checkboxes.Push(chk)
+        y += 25
     }
+
+    ; Bind "Select All" behavior
+
+    ClickEvent(*) {
+        for cb in checkboxes {
+            if selectAllChk.Value {
+                cb.Value := true
+            } else {
+                cb.Value := false
+            }
+        }
+    }
+    selectAllChk.OnEvent("Click", ClickEvent)
 
     return checkboxes
 }
+
+tabControl.UseTab(2)
+window.AddText("x20 y40 w200", "There is nothing here yet")
 
 DebugLog(text, newLine := 0){
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
@@ -336,6 +365,9 @@ StartMacro(*) {
 
         SetToolTip("Getting data from settings.ini")
         for i, chk in seedCheckboxes {
+            if(i < 1) {
+                continue
+            }
             SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
                 seedIndexes.Push(i)
@@ -343,6 +375,9 @@ StartMacro(*) {
         }
 
         for i, chk in gearCheckboxes {
+            if(i < 1) {
+                continue
+            }
             SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
                 gearIndexes.Push(i)
@@ -350,6 +385,9 @@ StartMacro(*) {
         }
 
         for i, chk in eggCheckboxes {
+            if(i < 1) {
+                continue
+            }
             SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
                 eggIndexes.Push(i)
@@ -577,8 +615,9 @@ setConfigAndIniValue(name, x, y){
     CONFIG['Config'][name "_y"] := y
 }
 
-startButton := window.AddButton("x" x1 " y680 w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y680 w130", "Set Config")
+tabControl.UseTab(1)
+startButton := window.AddButton("x" (x1 + 10) " y" WINDOW_HEIGHT " w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y" WINDOW_HEIGHT " w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
@@ -751,7 +790,7 @@ Macro() {
         Sleep(1000)
         Press("\")
         Sleep(1000)
-        Press("W", seedList.Length, 100)
+        Press("W", seedList.Length, 200)
     
         ; buy seeds
         seedDiffs := GetDiffs(seedIndexes)
@@ -762,16 +801,16 @@ Macro() {
                 break
             }
             SetToolTip("Buying " seedList[seedIndexes[i]] " seed if in stock")
-            Press("S", seedIndex)
+            Press("S", seedIndex, 200)
             Press("Enter")
             Press("S")
             if(seedCorrectionList[seedIndexes[i]] == 1) {
-                Sleep(100)
+                Sleep(200)
                 Press("A")
             }
-            Sleep(100)
+            Sleep(400)
 
-            Press("Enter", 30, 50)
+            Press("Enter", 30, 10)
             
             Press("W")
             Press("Enter")
@@ -783,7 +822,7 @@ Macro() {
     }
 
     if(DEBUG_gear_buy){
-        Sleep(1000)
+        Sleep(2000)
 
         ; go to gear shop
         Sleep(500)
@@ -793,7 +832,7 @@ Macro() {
         Press("E", 1)
 
         ; enter gear shop
-        Sleep(2000)
+        Sleep(3000)
         ClickScreen("gear")
         Sleep(2000)
         SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
@@ -807,7 +846,7 @@ Macro() {
         Sleep(1000)
         Press("\")
         Sleep(1000)
-        Press("W", gearList.Length, 100)
+        Press("W", gearList.Length, 200)
 
         ; buy gears
         gearDiffs := GetDiffs(gearIndexes)
@@ -819,16 +858,16 @@ Macro() {
             }
 
             SetToolTip("Buying " gearList[gearIndexes[i]] " gear if in stock")
-            Press("S", gearIndex)
+            Press("S", gearIndex, 200)
             Press("Enter")
             Press("S")
             if(gearCorrectionList[gearIndexes[i]] == 1) {
-                Sleep(100)
+                Sleep(200)
                 Press("A")
             }
-            Sleep(100)
+            Sleep(400)
 
-            Press("Enter", 6, 50)
+            Press("Enter", 6, 10)
             
             Press("W")
             Press("Enter")
@@ -844,7 +883,7 @@ Macro() {
         HoldKey("S", 0.67)
         Sleep(500)
         Press("E")
-        Sleep(2200)
+        Sleep(2400)
         ClickScreen("egg enter")
         Sleep(2000)
         SmoothMove(A_ScreenWidth / 2, A_ScreenHeight / 2)
@@ -858,7 +897,7 @@ Macro() {
         Sleep(1000)
         Press("\")
         Sleep(500)
-        Press("W", (eggList.Length * 2) - 1, 100)
+        Press("W", (eggList.Length * 2) - 1, 300)
 
         ; get diffs
         eggDiffs := GetDiffs(eggIndexes)
@@ -869,13 +908,13 @@ Macro() {
                 break
             }
             SetToolTip("Buying " eggList[eggIndexes[i]] " gear if in stock")
-            Press("S", eggDiffs[i])
+            Press("S", eggDiffs[i], 200)
             Sleep(200)
             Press("Enter")
             Sleep(200)
             Press("S")
             Sleep(200)
-            Press("Enter", 3, 50)
+            Press("Enter", 3, 100)
             Sleep(200)
             Press("W")
             Sleep(500)
