@@ -90,8 +90,7 @@ seedList := [
 gearList := [
     "Watering Can", "Trading Ticket", "Trowel", "Recall Wrench", "Basic Sprinkler",
     "Advanced Sprinkler", "Medium Toy", "Medium Treat", "Godly Sprinkler", "Magnifying Glass",
-    "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool",
-    "Friendship Pot", "Grandmaster Sprinkler", "Levelup Lolipop"
+    "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot", "Grandmaster Sprinkler", "Levelup Lolipop"
 ]
 
 seedCorrectionList := [
@@ -112,7 +111,7 @@ seedCorrectionList := [
     1, ; mango
     1, ; grape
     1, ; mushroom
-    1, ; pepper
+    1, ; pepper 
     1, ; cacao
     1, ; beanstalk
     1, ; ember lily
@@ -133,7 +132,6 @@ gearCorrectionList := [
     1, ; medium treat
     1, ; godly sprinkler
     1, ; magnifying glass
-    1, ; tanning mirror
     1, ; master sprinkler
     1, ; cleaning spray
     1, ; favorite tool
