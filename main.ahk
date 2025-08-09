@@ -60,7 +60,7 @@ mouse_x := 0
 mouse_y := 0
 first_run := true
 
-window := Gui("+Resize", "Rus' Grow a Garden Macro version 1.6.0")
+window := Gui("+Resize", "Rus' Grow a Garden Macro version 1.6.0-u2")
 window.SetFont("s10")
 
 ReadEntireIni(filePath) {
