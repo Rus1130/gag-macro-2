@@ -11,6 +11,8 @@ This is a macro for the hit Roblox game Grow a Garden.
 * Automatic character alignment
 * Automatic camera alignment
 * Failsafe checks to ensure that the macro does not run when it shouldn't
+* Auto crafting
+* Settings tab
 ## Failsafes
 This macro has several failsafes to ensure that it does not run when it shouldn't. For each enabled failsafe, the macro will scan the screen for certain text for a certain number of times before terminating. If the text is found for more than half of the scans, the macro will terminate. Failsafes are checked at the beginning of each macro sequence (so every `shop_timer` interval).
 # settings.ini

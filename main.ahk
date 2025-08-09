@@ -32,6 +32,24 @@ if !FileExist(settingsFile) {
     ExitApp
 }
 
+CRAFTING_JSON := Map(
+    "Twisted Tangle", Map(
+        "ingredients", ["Cactus Seed", "Bamboo Seed", "Cactus", "Mango"],
+        "time", (15*60),
+        "extra_step", true,
+    ),
+    "Veinpetal", Map(
+        "ingredients", ["Orange Tulip Seed", "Daffodil Seed", "Beanstalk", "Burning Bud"],
+        "time", (20*60),
+        "extra_step", true,
+    ),
+    "Reclaimer x3", Map(
+        "ingredients", ["Common Egg", "Harvest Tool"],
+        "time", (25*60),
+        "extra_step", true,
+    )
+)
+
 macro_running := false
 last_fired_egg := 0
 last_fired_shop := 0
@@ -42,7 +60,7 @@ mouse_x := 0
 mouse_y := 0
 first_run := true
 
-window := Gui("+Resize", "Rus' Grow a Garden Macro")
+window := Gui("+Resize", "Rus' Grow a Garden Macro version 1.6.0")
 window.SetFont("s10")
 
 ReadEntireIni(filePath) {
@@ -193,7 +211,7 @@ JoinMap(m, delim := "`n") {
 }
 
 tabControl := window.Add("Tab3", "w" WINDOW_WIDTH " h" (WINDOW_HEIGHT + 25))
-tabControl.Add(["Buying", "Settings"])
+tabControl.Add(["Buying", "Settings", "Auto Crafting"])
 tabControl.UseTab(1)
 
 ; Create GroupBoxes
@@ -244,7 +262,61 @@ AddItemsToColumn(gui, label, items, x, startY) {
 }
 
 tabControl.UseTab(2)
-window.AddText("x20 y40 w200", "There is nothing here yet")
+shopTimer := CONFIG['Settings']["shop_timer"]
+shopTimerLabel := window.AddText("x20 y40 w250", "Time between shop checks (Seconds):")
+shopTimerInput := window.Add("Edit", "x260 y40 w100 Number", shopTimer)
+
+eggTimer := CONFIG['Settings']["egg_timer"]
+eggTimerLabel := window.AddText("x20 y80 w250", "Time between egg checks (Seconds):")
+eggTimerInput := window.Add("Edit", "x260 y80 w100 Number", eggTimer)
+
+killKey := CONFIG['Settings']["kill_key"]
+killKeyLabel := window.AddText("x20 y120 w200", "Kill key (CLICK HERE and then click any key, no key combos):")
+killKeyInput := window.Add("Edit", "x260 y120 w30 ReadOnly", killKey)
+
+showToolTips := CONFIG['Settings']["show_tooltips"]
+showToolTipsLabel := window.AddText("x20 y160 w200", "Show tooltips:")
+showToolTipsInput := window.Add("Checkbox", "x260 y160 w30", "")
+showToolTipsInput.Value := showToolTips = "true"
+
+
+saveSettingsButton := window.AddButton("x20 y200 w100", "Save Settings")
+saveSettingsButton.OnEvent("Click", SaveSettings)
+SaveSettings(*) {
+    global CONFIG
+    shopTimer := shopTimerInput.Text
+    eggTimer := eggTimerInput.Text
+    killKey := killKeyInput.Text
+    showToolTips := showToolTipsInput.Value ? "true" : "false"
+
+    SetSetting("Settings", "shop_timer", shopTimer)
+    SetSetting("Settings", "egg_timer", eggTimer)
+    SetSetting("Settings", "kill_key", killKey)
+    SetSetting("Settings", "show_tooltips", showToolTips)
+
+    Hotkey(CONFIG['Settings']['kill_key'], "")
+
+    ReadEntireIni(settingsFile) ; reload CONFIG
+}
+
+; msgbox when killKeyLabel is pressed
+killKeyCollector(*) {
+    killKeyInput.Text := "..."
+    key := CaptureKey()
+    killKeyInput.Text := key
+}
+
+
+killKeyLabel.OnEvent("Click", killKeyCollector)
+
+CaptureKey() {
+    ih := InputHook()
+    ih.KeyOpt("{All}", "E")
+    ih.Start()
+    ih.Wait()
+    ih.Stop()
+    return ih.EndKey
+}
 
 DebugLog(text, newLine := 0){
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
@@ -617,7 +689,7 @@ setConfigAndIniValue(name, x, y){
 
 tabControl.UseTab(1)
 startButton := window.AddButton("x" (x1 + 10) " y" WINDOW_HEIGHT " w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y" WINDOW_HEIGHT " w130", "Set Config")
+configButton := window.AddButton("x" (x1 + 120) " y" WINDOW_HEIGHT " w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
@@ -828,7 +900,7 @@ Macro() {
         Sleep(500)
         Press("2", 1)
         LeftClick()
-        Sleep(500)
+        Sleep(2000)
         Press("E", 1)
 
         ; enter gear shop
